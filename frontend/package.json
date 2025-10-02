@@ -1,0 +1,24 @@
+{
+  "name": "dinemate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx @tailwindcss/cli -i ./src/css/input.css -o ./public/css/output.css --watch & live-server public",
+    "build:css:watch": "npx @tailwindcss/cli -i ./src/css/input.css -o ./public/css/output.css --watch",
+    "serve": "serve public -p 41841",
+    "liveserver": "live-server public"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.12",
+    "tailwindcss": "^4.1.12"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  }
+}
