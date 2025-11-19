@@ -2,7 +2,7 @@
   "framework": null,
   "buildCommand": "echo 'CSS already built, skipping frontend build'",
   "outputDirectory": "frontend/public",
-  "installCommand": "cd api && npm install",
+  "installCommand": "cd backend && npm install && cd ../api && npm install",
   "rewrites": [
     {
       "source": "/api/(.*)",
