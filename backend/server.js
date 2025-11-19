@@ -5,22 +5,13 @@ import cookieParser from 'cookie-parser';
 import routes from './routes/index.js';
 
 const app = express();
-const port = process.env.PORT || 3010;
+const port = 3010;
 
 connectDB();
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests from Vercel domains and localhost
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:3010',
-      'http://localhost:41841',
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
-      process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : null
-    ].filter(Boolean);
-    
-    if (!origin || allowedOrigins.some(allowed => origin.startsWith(allowed)) || origin.startsWith("http://localhost") || origin.includes('vercel.app')) {
+    if (!origin || origin.startsWith("http://localhost")) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -31,19 +22,13 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-
 app.get('/', (_, res) => {
   res.send('<h1>Hello, World!</h1>');
 });
 
 app.use('/api', routes);
 
-// For local development
-if (!process.env.VERCEL) {
-  app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
-  });
-}
-
-// Export for Vercel
-export default app;
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+  console.log("Hello, World!");
+});

@@ -7,7 +7,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:css": "npx tailwindcss -i ./src/css/input.css -o ./public/css/output.css",
     "build:css:watch": "npx tailwindcss -i ./src/css/input.css -o ./public/css/output.css --watch",
-    "build": "npm run build:css",
     "dev": "npm run build:css && live-server public",
     "serve": "serve public -p 41841",
     "liveserver": "live-server public"

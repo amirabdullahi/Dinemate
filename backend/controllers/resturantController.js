@@ -62,13 +62,6 @@ class ResturantController {
   async login(req, res) {
     try {
       const { email, password } = req.body;
-      
-      // Check if JWT_SECRET is configured
-      if (!process.env.JWT_SECRET) {
-        console.error('JWT_SECRET is not configured');
-        return res.status(500).json({ message: 'Server configuration error. Please contact administrator.' });
-      }
-      
       const resturant = await Resturant.findOne({ resturantEmail: email });
 
       if (!resturant) {
@@ -100,8 +93,7 @@ class ResturantController {
 
       res.json({ message: "Login Successful", token });
     } catch (error) {
-      console.error('Restaurant login error:', error);
-      res.status(500).json({ message: "An error occurred during login. Please try again." });
+      res.status(500).json({ message: "Server error", error: error.message });
     }
   }
 

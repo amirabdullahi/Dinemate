@@ -15,18 +15,7 @@ class AdminController  {
             const { email, password } = req.body;
 
             if (!email || !password) {
-                return res.status(400).json({ message: "Email and password required to login" });
-            }
-
-            // Check if environment variables are configured
-            if (!process.env.JWT_SECRET) {
-                console.error('JWT_SECRET is not configured');
-                return res.status(500).json({ message: 'Server configuration error. Please contact administrator.' });
-            }
-
-            if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
-                console.error('Admin credentials not configured');
-                return res.status(500).json({ message: 'Admin account not configured. Please contact administrator.' });
+                return res.status(404).json({ message: "Email and password required to login" });
             }
 
             const isValid = (email === process.env.ADMIN_EMAIL) && (password === process.env.ADMIN_PASSWORD);
@@ -35,12 +24,11 @@ class AdminController  {
                 return res.status(401).json({ message: "Invalid credentials" });
             }
 
-            const token = jwt.sign({ admin: process.env.ADMIN_EMAIL }, process.env.JWT_SECRET, { expiresIn: "1d" });
+            const token = jwt.sign({ admin: process.env.ADMIN_PASSWORD }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
             res.json({ message: "Login successful", token});
         } catch (error) {
-            console.error('Admin login error:', error);
-            res.status(500).json({ message: "An error occurred during login. Please try again." });
+            res.status(500).json({ message: "Server error", error: error.message });
         }
     }
 
@@ -71,22 +59,6 @@ class AdminController  {
             await newActivity.save();
 
             res.json(resturants);
-        } catch (error) {
-            res.status(500).json({ message: "Server error", error: error.message });
-        }
-    }
-
-    async getResturant(req, res) {
-        try {
-            const { resturantId } = req.params;
-            
-            const resturant = await Resturant.findById(resturantId).select('-password -confirmationNumber');
-            
-            if (!resturant) {
-                return res.status(404).json({ message: "Restaurant not found" });
-            }
-
-            res.json(resturant);
         } catch (error) {
             res.status(500).json({ message: "Server error", error: error.message });
         }
