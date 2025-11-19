@@ -206,3 +206,5 @@ config/local.json
 # Monitoring and analytics
 .vercel
 .netlify
+
+.vercel
