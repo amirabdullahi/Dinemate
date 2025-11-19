@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
 import routes from '../backend/routes/index.js';
 import connectDB from '../backend/utils/db.js';
+
+dotenv.config({ path: '../backend/.env' });
 
 const app = express();
 
@@ -31,11 +34,7 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
-// Routes
-app.get('/', (_, res) => {
-  res.send('<h1>Dinemate API is running!</h1>');
-});
-
+// Routes - keep /api prefix
 app.use('/api', routes);
 
 // Export for Vercel
