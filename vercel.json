@@ -16,12 +16,16 @@
       "dest": "backend/server.js"
     },
     {
-      "src": "/(.*\\.(html|css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot))",
-      "dest": "/frontend/public/$1"
+      "src": "/",
+      "dest": "frontend/public/index.html"
+    },
+    {
+      "src": "/(.*\\..*)",
+      "dest": "frontend/public/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/public/$1.html"
+      "dest": "frontend/public/$1.html"
     }
   ]
 }
