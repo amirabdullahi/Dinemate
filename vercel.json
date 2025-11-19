@@ -1,89 +1,19 @@
 {
-  "framework": null,
-  "buildCommand": "echo 'CSS already built, skipping frontend build'",
-  "outputDirectory": "frontend/public",
-  "installCommand": "npm install --prefix backend && npm install --prefix api",
-  "functions": {
-    "api/index.js": {
-      "includeFiles": "backend/**"
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
     }
-  },
-  "rewrites": [
+  ],
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
+      "src": "/api/(.*)",
+      "dest": "backend/server.js"
     },
     {
-      "source": "/admindashboard",
-      "destination": "/admindashboard.html"
-    },
-    {
-      "source": "/adminlogin",
-      "destination": "/adminlogin.html"
-    },
-    {
-      "source": "/analyticsandreportspage",
-      "destination": "/analyticsandreportspage.html"
-    },
-    {
-      "source": "/confirmationpage",
-      "destination": "/confirmationpage.html"
-    },
-    {
-      "source": "/forgotpassword",
-      "destination": "/forgotpassword.html"
-    },
-    {
-      "source": "/recommendations",
-      "destination": "/recommendations.html"
-    },
-    {
-      "source": "/reservationandprepayment",
-      "destination": "/reservationandprepayment.html"
-    },
-    {
-      "source": "/resetpassword",
-      "destination": "/resetpassword.html"
-    },
-    {
-      "source": "/restaurantdashboard",
-      "destination": "/restaurantdashboard.html"
-    },
-    {
-      "source": "/restaurantdiscovery",
-      "destination": "/restaurantdiscovery.html"
-    },
-    {
-      "source": "/restaurantlandingpage",
-      "destination": "/restaurantlandingpage.html"
-    },
-    {
-      "source": "/restaurantlogin",
-      "destination": "/restaurantlogin.html"
-    },
-    {
-      "source": "/restaurantprofilepages",
-      "destination": "/restaurantprofilepages.html"
-    },
-    {
-      "source": "/restaurantregistration",
-      "destination": "/restaurantregistration.html"
-    },
-    {
-      "source": "/systemanalytics",
-      "destination": "/systemanalytics.html"
-    },
-    {
-      "source": "/userdashboard",
-      "destination": "/userdashboard.html"
-    },
-    {
-      "source": "/userlogin",
-      "destination": "/userlogin.html"
-    },
-    {
-      "source": "/userregistration",
-      "destination": "/userregistration.html"
+      "src": "/(.*)",
+      "dest": "frontend/public/$1"
     }
   ]
 }
