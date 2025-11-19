@@ -188,6 +188,13 @@ class UserController {
   async login(req, res) {
     try {
         const { email, password } = req.body;
+        
+        // Check if JWT_SECRET is configured
+        if (!process.env.JWT_SECRET) {
+            console.error('JWT_SECRET is not configured');
+            return res.status(500).json({ message: 'Server configuration error. Please contact administrator.' });
+        }
+        
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(401).json({ message: 'Invalid email' });
@@ -202,15 +209,16 @@ class UserController {
 
         const activitylog = new activity({
             user: user.firstname + user.lastname,
-            activity: 'Registration'
+            activity: 'Login'
         });
         await activitylog.save();
 
-        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-        res.status(201).json({ message: "Login successful", token });
+        res.status(200).json({ message: "Login successful", token });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Login error:', error);
+        res.status(500).json({ message: 'An error occurred during login. Please try again.' });
     }
   }
 
