@@ -143,7 +143,7 @@ class AdminController  {
                         
                         <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 12px;">
                             <p>This is an automated message. Please do not reply to this email.</p>
-                            <p>© 2024 Dinemate. All rights reserved.</p>
+                            <p>© 2025 Dinemate. All rights reserved.</p>
                         </div>
                     </body>
                     </html>

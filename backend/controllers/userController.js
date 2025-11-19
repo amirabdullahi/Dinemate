@@ -29,20 +29,21 @@ const DARAJA_SHORTCODE = process.env.DARAJA_SHORTCODE;
 
 async function getDarajaToken() {
   try {
+    if (!DARAJA_CONSUMER_KEY || !DARAJA_CONSUMER_SECRET) {
+      throw new Error("M-Pesa credentials not configured");
+    }
+    
     const auth = Buffer.from(`${DARAJA_CONSUMER_KEY}:${DARAJA_CONSUMER_SECRET}`).toString("base64");
-    console.log("[getDarajaToken] Using consumerKey:", DARAJA_CONSUMER_KEY);
-    console.log("[getDarajaToken] Using consumerSecret:", DARAJA_CONSUMER_SECRET);
 
     const res = await axios.get(
       "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
       { headers: { Authorization: `Basic ${auth}` } }
     );
 
-    console.log("[getDarajaToken] Token response:", res.data);
     return res.data.access_token;
   } catch (err) {
-    console.error("[getDarajaToken] ERROR:", err.response?.data || err.message);
-    throw err;
+    console.error("[getDarajaToken] Error:", err.response?.data || err.message);
+    throw new Error("Failed to get M-Pesa access token");
   }
 }
 
@@ -52,45 +53,42 @@ async function makePayment(reservation, phoneNumber) {
       throw new Error("Reservation not found");
     }
 
-    console.log("[makePayment] Reservation ID:", reservation._id);
-    console.log("[makePayment] Phone number:", phoneNumber);
+    if (!DARAJA_SHORTCODE || !DARAJA_PASSKEY) {
+      throw new Error("M-Pesa configuration incomplete");
+    }
 
-    // STEP 1: Request Daraja token
+    // Validate and format phone number
+    let formattedPhone = phoneNumber;
+    if (phoneNumber.startsWith('+254')) {
+      formattedPhone = '254' + phoneNumber.slice(4);
+    } else if (phoneNumber.startsWith('0')) {
+      formattedPhone = '254' + phoneNumber.slice(1);
+    } else if (!phoneNumber.startsWith('254')) {
+      formattedPhone = '254' + phoneNumber;
+    }
+
     const token = await getDarajaToken();
-    console.log("[makePayment] Received token:", token);
-
-    // STEP 2: Build STK Push request
     const timestamp = new Date().toISOString().replace(/[-T:.Z]/g, "").slice(0, 14);
     const password = Buffer.from(`${DARAJA_SHORTCODE}${DARAJA_PASSKEY}${timestamp}`).toString("base64");
-
-    console.log("[makePayment] Timestamp:", timestamp);
-    console.log("[makePayment] Shortcode:", DARAJA_SHORTCODE);
-    console.log("[makePayment] Passkey (hidden):", DARAJA_PASSKEY ? "***SET***" : "MISSING");
-    console.log("[makePayment] Encoded password:", password);
 
     const payload = {
       BusinessShortCode: DARAJA_SHORTCODE,
       Password: password,
       Timestamp: timestamp,
       TransactionType: "CustomerPayBillOnline",
-      Amount: 1, // flat rate per reservation
-      PartyA: phoneNumber,
+      Amount: 1,
+      PartyA: formattedPhone,
       PartyB: DARAJA_SHORTCODE,
-      PhoneNumber: phoneNumber,
-      CallBackURL: "https://yourdomain.com/api/payment/callback",
+      PhoneNumber: formattedPhone,
+      CallBackURL: "https://mockbin.io/bin/create",
       AccountReference: reservation._id.toString(),
-      TransactionDesc: "Reservation Payment",
+      TransactionDesc: "DineMate Reservation",
     };
-
-    console.log("[makePayment] STK Payload:", payload);
 
     const stkResponse = await axios.post(DARAJA_BASE_URL, payload, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log("[makePayment] STK Response:", stkResponse.data);
-
-    // Create payment record in "pending"
     const payment = new Payment({
       user: reservation.user,
       reservation: reservation._id,
@@ -98,15 +96,14 @@ async function makePayment(reservation, phoneNumber) {
       payementStatus: "pending",
     });
     await payment.save();
-    console.log("[makePayment] Payment saved with ID:", payment._id);
 
     return {
       stkResponse: stkResponse.data,
       payment: payment
     }
   } catch (error) {
-    console.error("[makePayment] ERROR:", error.response?.data || error.message);
-    throw error;
+    console.error("[makePayment] Error:", error.response?.data || error.message);
+    throw new Error("Payment processing failed");
   }
 }
 
@@ -359,6 +356,14 @@ class UserController {
 
   async confirmAndPay(req, res) {
     try {
+      const { resturantId, reservationDate, reservationTime, phoneNumber, partySize } = req.body;
+      
+      if (!resturantId || !reservationDate || !reservationTime || !phoneNumber || !partySize) {
+        return res.status(400).json({ 
+          message: "Missing required fields" 
+        });
+      }
+      
       const user = await User.findById(req.user.userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -369,38 +374,40 @@ class UserController {
         return res.status(404).json({ message: "Restaurant not found" });
       }
 
-      const reqbody = req.body;
+      console.log("[confirmAndPay] Creating reservation for user:", user._id);
+      const reservation = await makeReservation(user, resturant, req.body);
+      console.log("[confirmAndPay] Reservation created:", reservation._id);
+      
+      const { stkResponse, payment } = await makePayment(reservation, req.body.phoneNumber);
 
-      // 1. Make reservation
-      const reservation = await makeReservation(user, resturant, reqbody);
-
-      // 2. Trigger Mpesa payment
-      const { stkResponse, payment } = await makePayment(reservation, reqbody.phoneNumber);
-
-      // 3. Update user Mpesa numbers (optional, store properly instead of +=)
-      if (!user.mpesaNumbers.includes(reqbody.phoneNumber)) {
-        user.mpesaNumbers.push(reqbody.phoneNumber);
+      if (!user.mpesaNumbers.includes(req.body.phoneNumber)) {
+        user.mpesaNumbers.push(req.body.phoneNumber);
+        await user.save();
       }
-      await user.save();
 
       if (stkResponse && stkResponse.ResponseCode === "0") {
         reservation.reservationStatus = 'payed';
-        reservation.save();
-
+        await reservation.save();
         payment.payementStatus = 'confirmed';
-        payment.save();
+        await payment.save();
       } else {
         payment.payementStatus = 'failed';
-        payment.save();
-        console.log("[confirmAndPay] STK Response failed:", stkResponse)
+        await payment.save();
       }
 
       res.status(200).json({
-        message: "Successfully paid reservation amount",
+        message: "Successfully processed reservation",
         reservation
       });
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      console.error("[confirmAndPay] Error occurred:", error.message);
+      res.status(500).json({ 
+        message: error.message,
+        ...(process.env.NODE_ENV === 'development' && { 
+          error: error.name,
+          stack: error.stack 
+        })
+      });
     }
   }
 
