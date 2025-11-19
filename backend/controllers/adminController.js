@@ -64,6 +64,22 @@ class AdminController  {
         }
     }
 
+    async getResturant(req, res) {
+        try {
+            const { resturantId } = req.params;
+            
+            const resturant = await Resturant.findById(resturantId).select('-password -confirmationNumber');
+            
+            if (!resturant) {
+                return res.status(404).json({ message: "Restaurant not found" });
+            }
+
+            res.json(resturant);
+        } catch (error) {
+            res.status(500).json({ message: "Server error", error: error.message });
+        }
+    }
+
     async approveResturant(req, res) {
         try {
             const { resturantId } = req.params;

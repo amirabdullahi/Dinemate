@@ -8,6 +8,7 @@ const router = Router();
 router.post("/login", adminController.login);
 router.delete("/logout", adminController.logout);
 router.get("/resturants", authenticate.verifyToken, adminController.getResturants);
+router.get("/resturant/:resturantId", authenticate.verifyToken, adminController.getResturant);
 router.post("/approve/:resturantId", authenticate.verifyToken, adminController.approveResturant);
 router.get("/activities", authenticate.verifyToken, adminController.getActivities);
 

@@ -1,21 +1,84 @@
 {
-  "version": 2,
-  "routes": [
+  "framework": null,
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/public",
+  "installCommand": "cd api && npm install",
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index"
+      "source": "/api/(.*)",
+      "destination": "/api"
     },
     {
-      "src": "/",
-      "dest": "/frontend/public/index.html"
+      "source": "/admindashboard",
+      "destination": "/admindashboard.html"
     },
     {
-      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|html))$",
-      "dest": "/frontend/public/$1"
+      "source": "/adminlogin",
+      "destination": "/adminlogin.html"
     },
     {
-      "src": "/(.*)",
-      "dest": "/frontend/public/$1"
+      "source": "/analyticsandreportspage",
+      "destination": "/analyticsandreportspage.html"
+    },
+    {
+      "source": "/confirmationpage",
+      "destination": "/confirmationpage.html"
+    },
+    {
+      "source": "/forgotpassword",
+      "destination": "/forgotpassword.html"
+    },
+    {
+      "source": "/recommendations",
+      "destination": "/recommendations.html"
+    },
+    {
+      "source": "/reservationandprepayment",
+      "destination": "/reservationandprepayment.html"
+    },
+    {
+      "source": "/resetpassword",
+      "destination": "/resetpassword.html"
+    },
+    {
+      "source": "/restaurantdashboard",
+      "destination": "/restaurantdashboard.html"
+    },
+    {
+      "source": "/restaurantdiscovery",
+      "destination": "/restaurantdiscovery.html"
+    },
+    {
+      "source": "/restaurantlandingpage",
+      "destination": "/restaurantlandingpage.html"
+    },
+    {
+      "source": "/restaurantlogin",
+      "destination": "/restaurantlogin.html"
+    },
+    {
+      "source": "/restaurantprofilepages",
+      "destination": "/restaurantprofilepages.html"
+    },
+    {
+      "source": "/restaurantregistration",
+      "destination": "/restaurantregistration.html"
+    },
+    {
+      "source": "/systemanalytics",
+      "destination": "/systemanalytics.html"
+    },
+    {
+      "source": "/userdashboard",
+      "destination": "/userdashboard.html"
+    },
+    {
+      "source": "/userlogin",
+      "destination": "/userlogin.html"
+    },
+    {
+      "source": "/userregistration",
+      "destination": "/userregistration.html"
     }
   ]
 }
